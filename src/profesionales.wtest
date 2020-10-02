@@ -1,0 +1,60 @@
+import universidad.*
+import profesionales.*
+import empresas.*
+import solicitantes.*
+
+test "Universidades" {
+	
+    //Universidades
+    const uniSanMartin  = new Universidad(provincia = "Buenos Aires", honorariosPorHora = 3500)
+    const uniRosario    = new Universidad(provincia = "Santa Fe", honorariosPorHora = 2800)
+    const uniCorrientes = new Universidad(provincia = "Corrientes", honorariosPorHora = 4200)
+    const uniHurlingham = new Universidad(provincia = "Buenos Aires", honorariosPorHora = 8800)
+    
+    //Profesionales 
+    const juana    = new ProfesionalVinculado(universidad = uniRosario)
+    const melina   = new ProfesionalAsociado(universidad = uniCorrientes)
+    const rocio    = new ProfesionalLibre(universidad = uniHurlingham, provinciasDondePuedeTrabajar = #{"Sanata Fe", "Cordoba", "Buenos Aires"}, honorariosPorHora = 5000)
+    const luciana  = new ProfesionalLibre(universidad = uniRosario, provinciasDondePuedeTrabajar = #{"Sanata Fe", "Entre Rios"}, honorariosPorHora = 3200)
+    
+    //Empresa
+    const empresa = new Empresa(profesionales = #{juana, melina, rocio, luciana}, honorarioDeReferencia = 3500)
+    
+	assert.equals(2,empresa.cuantosEstudiaronEn(uniRosario))
+	assert.equals(1,empresa.cuantosEstudiaronEn(uniHurlingham))
+	assert.equals(0,empresa.cuantosEstudiaronEn(uniSanMartin))
+	assert.equals(#{rocio},empresa.profesionalesCaros())
+	assert.equals(#{uniRosario, uniCorrientes, uniHurlingham},empresa.universidadesFormadoras())
+	assert.equals(juana,empresa.elMasBarato())
+	assert.equals(true,empresa.esGenteAcotada())
+	
+	luciana.provinciasDondePuedeTrabajar(#{"Sanata Fe", "Entre Rios", "Corrientes", "Misiones"})  
+	
+	assert.equals(false,empresa.esGenteAcotada())
+	
+	//Solicitantes
+	const jose       = new Persona(provincia = "Buenos Aires")
+	const alberto    = new Persona(provincia = "Chubut")
+	const colegio    = new Institucion(universidadesReconocidas = #{uniSanMartin, uniHurlingham})
+	const municipio  = new Institucion(universidadesReconocidas = #{uniSanMartin})
+	
+	assert.equals(true,empresa.puedeSatisfaserA(jose))
+	assert.equals(rocio,empresa.profesionalAptoPara(jose))
+	
+	
+	assert.equals(false,empresa.puedeSatisfaserA(alberto))
+	assert.equals(null,empresa.profesionalAptoPara(alberto))
+	
+	assert.equals(true,empresa.puedeSatisfaserA(colegio))
+	assert.equals(rocio,empresa.profesionalAptoPara(colegio))
+	
+	assert.equals(false,empresa.puedeSatisfaserA(municipio))
+	assert.equals(null,empresa.profesionalAptoPara(municipio))
+	
+	empresa.darServicio(jose)
+	empresa.darServicio(alberto)
+	empresa.darServicio(colegio)
+	empresa.darServicio(municipio)
+	
+	assert.equals(10000,rocio.dineroRecaudado())
+}
